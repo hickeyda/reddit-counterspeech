@@ -41,17 +41,15 @@ train_list = []
 val_list = []
 test_list = []
 
-test ='../data/counter_context/data/gold/train.jsonl',
-
-with open('../hater_non_hater/reddit_counter_hate/reference/counter_context/data/gold/train.jsonl', 'r') as f:
+with open('../data/counter_context/data/gold/train.jsonl', 'r') as f:
     for line in f:
         train_list.append(json.loads(line))
         
-with open('../hater_non_hater/reddit_counter_hate/reference/counter_context/data/gold/val.jsonl', 'r') as f:
+with open('../data/counter_context/data/gold/val.jsonl', 'r') as f:
     for line in f:
         val_list.append(json.loads(line))
         
-with open('../hater_non_hater/reddit_counter_hate/reference/counter_context/data/gold/test.jsonl', 'r') as f:
+with open('../data/counter_context/data/gold/test.jsonl', 'r') as f:
     for line in f:
         test_list.append(json.loads(line))
         
