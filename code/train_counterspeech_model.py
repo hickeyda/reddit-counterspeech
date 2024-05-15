@@ -17,6 +17,10 @@ import pandas as pd
 import logging
 
 ADDITIONAL_FEATURES=True
+YU_ET_AL = False #whether to use Yu et al. data or not
+
+if YU_ET_AL:
+    ADDITIONAL_FEATURES = False
 
 dev = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -193,36 +197,11 @@ class CounterspeechNN(nn.Module):
                 roc_valid = roc_auc_score(val_labels, val_preds)
 
 
-			##################
-			### STATISTICS ###
-			##################
-            '''
-            if (epoch+1)%10 == 0:
-                print(f'Epoch {epoch+1}/{epochs}'+'\n')
-                print(f'Train Loss: {LOSS_train:.5f}  |  Valid Loss: {LOSS_valid:.5f}')
-                print(f'Train Accu: {ACCURACY_0_train:.5f}  |  Valid Accu: {ACCURACY_0_valid:.5f}')
-                print()
-                print("Class 0:")
-                print(f'Train Prec: {PRECISION_0_train:.5f}  |  Valid Prec: {PRECISION_0_valid:.5f}')
-                print(f'Train Rcll: {RECALL_0_train:.5f}  |  Valid Rcll: {RECALL_0_valid:.5f}')
-                print(f'Train  F1 : {F1_0_train:.5f}  |  Valid  F1 : {F1_0_valid:.5f}')
-                print()
-                print("Class 1:")
-                print(f'Train Prec: {PRECISION_1_train:.5f}  |  Valid Prec: {PRECISION_1_valid:.5f}')
-                print(f'Train Rcll: {RECALL_1_train:.5f}  |  Valid Rcll: {RECALL_1_valid:.5f}')
-                print(f'Train  F1 : {F1_1_train:.5f}  |  Valid  F1 : {F1_1_valid:.5f}')
-                print()
-                print(f"Train ROC-AUC: {roc_train:.5f} | Valid ROC-AUC: {roc_valid:.5f}")
-                print('-'*43)
-                print()
-            '''
-		
-        #print('Finished Training')
         if writing_file:
             with open(writing_file + '.csv', 'a+') as f:
                 f.write(str(seed) + ',' + str(roc_valid) + '\n')
 
-            
+            #write the number of true positives/false positives, etc., to the files.
             for threshold in np.arange(0, 1, 0.05):
                 first_one = ','
                 if threshold == 0:
@@ -416,7 +395,7 @@ class CounterspeechNN(nn.Module):
 
 if __name__ == '__main__':
     
-    bootstrap_path = f'../data/counterspeech_results_additional_features_{ADDITIONAL_FEATURES}'
+    bootstrap_path = f'../data/counterspeech_results_additional_features_{ADDITIONAL_FEATURES}_yu_et_al_{YU_ET_AL}' #name the output files
 
     with open(bootstrap_path + '.csv', 'w') as f:
         f.write('seed,roc_auc\n')
@@ -429,8 +408,12 @@ if __name__ == '__main__':
                 f.write(f',threshold_{threshold * 100}')
 
             f.write('\n')
-    
+
     full_dataset = torch.load('./counterspeech_model_input.pth')
+
+    if YU_ET_AL:
+        train_dataset = torch.load('../data/yu_et_al_input.pth')
+    
     
     for i in tqdm(range(50)): #for each random seed
         model = CounterspeechNN(device=dev) #initialize model 
@@ -439,7 +422,8 @@ if __name__ == '__main__':
         train_x, val_x, train_x2, val_x2, train_x3, val_x3, train_y, val_y = train_test_split(full_dataset.tensors[0], full_dataset.tensors[1], full_dataset.tensors[2], full_dataset.tensors[3], test_size=0.15, random_state=i)
         train_x, test_x, train_x2, test_x2, train_x3, test_x3, train_y, test_y = train_test_split(train_x, train_x2, train_x3, train_y, test_size=0.176, random_state=i)
         
-        train_dataset = TensorDataset(train_x, train_x2, train_x3, train_y)
+        if not YU_ET_AL:
+            train_dataset = TensorDataset(train_x, train_x2, train_x3, train_y)
 
         valid_dataset = TensorDataset(test_x, test_x2, test_x3, test_y) #use test_x/val_x depending on testing/validation
 

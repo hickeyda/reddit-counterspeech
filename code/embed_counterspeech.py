@@ -40,23 +40,25 @@ def embed_sequence(text):
 def create_row_vector(row):
     return [row[c] for c in row.index]
 
+if not YU_ET_AL:
+    text_data = pd.read_csv('../../counterspeech_dataset.csv', lineterminator='\n')
+    
+    text_data['newcomer_input'] = text_data['context'] + ' </s> ' + text_data['newcomer']
+    text_data['reply_input'] = text_data['newcomer'] + ' </s> ' + text_data['reply']
+    
+    newcomers = text_data[['subreddit', 'newcomer_input', 'newcomer_counterspeech',
+                           'newcomer_score']].rename(columns={'newcomer_input':'input',
+                           'newcomer_counterspeech':'counterspeech', 'newcomer_score':'score'})
+    
+    replies = text_data[['subreddit', 'reply_input', 'reply_counterspeech',
+                         'reply_score']].rename(columns={'reply_input':'input',
+                         'reply_counterspeech':'counterspeech', 'reply_score':'score'})
 
-text_data = pd.read_csv('../../counterspeech_dataset.csv', lineterminator='\n')
+    #make each row a model input
+    input_df = pd.concat([newcomers, replies])
 
-text_data['newcomer_input'] = text_data['context'] + ' </s> ' + text_data['newcomer']
-text_data['reply_input'] = text_data['newcomer'] + ' </s> ' + text_data['reply']
-
-newcomers = text_data[['subreddit', 'newcomer_input', 'newcomer_counterspeech',
-                       'newcomer_score']].rename(columns={'newcomer_input':'input',
-                       'newcomer_counterspeech':'counterspeech', 'newcomer_score':'score'})
-
-replies = text_data[['subreddit', 'reply_input', 'reply_counterspeech',
-                     'reply_score']].rename(columns={'reply_input':'input',
-                     'reply_counterspeech':'counterspeech', 'reply_score':'score'})
-
-#make each row a model input
-input_df = pd.concat([newcomers, replies])
-
+else:
+    
 
 text_x = torch.empty(size=(len(input_df), 768))
 
@@ -82,5 +84,6 @@ eye_matrix = torch.eye(2)
 y = eye_matrix[labels]
 
 training_set = TensorDataset(text_x, scores, one_hot_tensor, y)
+
 
 torch.save(training_set, './counterspeech_model_input.pth')
