@@ -269,4 +269,6 @@ Yes, older versions of the dataset will be available on GitHub.
 
 If others wish to build on the dataset and host it on the GitHub the dataset is hosted on, they may contact the authors and ask them to do so. Alternatively, they can host it on their own GitHub account.
 
-### Any other comments?
+### References
+Baumgartner, Jason, et al. "The pushshift reddit dataset." Proceedings of the international AAAI conference on web and social media. Vol. 14. 2020.
+
